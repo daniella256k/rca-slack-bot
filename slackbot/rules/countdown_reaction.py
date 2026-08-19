@@ -63,9 +63,13 @@ class CountdownReactionRule(Rule):
         )
 
     def on_message(self, event: dict) -> None:
-        # Only plain new top-level messages -- skip edits, deletes, thread
-        # broadcasts, channel_join notices, etc.
-        if event.get("subtype") is not None:
+        # Accept normal human posts and app/webhook posts (`bot_message`).
+        # Skip edits, deletes, thread broadcasts, channel_join notices, etc.
+        if event.get("subtype") not in (None, "bot_message"):
+            return
+        # A thread reply commonly has no subtype, so check thread_ts
+        # separately to ensure only new top-level messages start watches.
+        if event.get("thread_ts") is not None:
             return
         if not self._matches_source(event):
             return
