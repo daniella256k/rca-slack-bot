@@ -1,0 +1,47 @@
+slack:
+  bot_token: "xoxb-your-bot-token"
+  app_token: "xapp-your-app-level-token"   # required for Socket Mode (needs connections:write scope)
+
+database:
+  path: "bot_state.db"
+
+poll_interval_seconds: 60   # how often the scheduler checks for due warnings
+
+rules:
+  # --- Contact follow-up SLA ---------------------------------------------
+  - name: contact_follow_up
+    type: countdown_reaction
+    enabled: true
+
+    # what to watch
+    source_channel: "C0123456"        # #contacts channel ID
+    source_bot_id: "B0123456"         # the Join Request app's bot user ID
+    # source_user_id: null            # alternative: match a human user instead of an app
+    # source_username: "Zapier"       # use for incoming webhooks when source_bot_id isn't stable
+
+    # timing
+    watch_duration_hours: 12
+    warning_offsets_hours: [1]        # warns at 12h - 1h = the 11h mark
+
+    # what cancels the countdown
+    cancel_emojis: ["white_check_mark", "x"]
+
+    # where/what to notify
+    target_channel: "C0654321"        # #secretaries channel ID
+    mention: "<!channel>"
+    warning_template: >
+      {mention} A contact submitted {age_hours}h ago in <#C0123456> still hasn't
+      been followed up on and is nearing the 12-hour SLA. <{permalink}|View the message>
+
+  # --- Example of a second, future rule reusing the same engine ---------
+  # - name: another_sla
+  #   type: countdown_reaction
+  #   enabled: false
+  #   source_channel: "C0999999"
+  #   source_user_id: "U0999999"
+  #   watch_duration_hours: 24
+  #   warning_offsets_hours: [4, 1]    # two staggered warnings
+  #   cancel_emojis: ["eyes"]
+  #   target_channel: "C0888888"
+  #   mention: "<!here>"
+  #   warning_template: "{mention} Reminder: item posted {age_hours}h ago. {permalink}"
