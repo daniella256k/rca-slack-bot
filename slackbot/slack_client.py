@@ -13,6 +13,7 @@ from urllib.parse import parse_qs, urlparse
 
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+from slack_sdk.http_retry.builtin_handlers import RateLimitErrorRetryHandler
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,9 @@ def parse_message_permalink(permalink: str) -> MessagePermalink:
 class SlackClient:
     def __init__(self, bot_token: str):
         self.web = WebClient(token=bot_token)
+        # Wait and retry when Slack rate-limits us (HTTP 429), e.g. while
+        # paging through a long channel history for /collect.
+        self.web.retry_handlers.append(RateLimitErrorRetryHandler(max_retry_count=3))
 
     def resolve_channel(self, channel: str) -> str:
         """Resolve #name/name to an ID; copied channel IDs pass through."""

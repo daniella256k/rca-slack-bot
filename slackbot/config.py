@@ -49,6 +49,9 @@ class AppConfig:
     database: DatabaseConfig
     poll_interval_seconds: int
     rules: List[RuleConfig]
+    # Raw per-command settings, e.g. {"collect": {...}}; each command
+    # module validates its own block.
+    commands: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
 
 def load_config(path: Optional[str] = None, *, require_app_token: bool = True) -> AppConfig:
@@ -94,4 +97,5 @@ def load_config(path: Optional[str] = None, *, require_app_token: bool = True) -
         database=database,
         poll_interval_seconds=raw.get("poll_interval_seconds", 60),
         rules=rules,
+        commands=raw.get("commands") or {},
     )

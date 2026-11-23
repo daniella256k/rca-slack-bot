@@ -20,6 +20,8 @@ from .rules.base import RULE_REGISTRY
 # a new rule type.
 from .rules import countdown_reaction  # noqa: F401
 
+from .commands import collect
+
 from .scheduler import NotificationScheduler
 from .slack_client import SlackClient
 from .storage import Storage
@@ -68,6 +70,15 @@ def main() -> None:
                 rule.on_reaction(event)
             except Exception:
                 logger.exception("Rule '%s' failed handling a reaction event", rule.name)
+
+    collect_cfg = cfg.commands.get("collect") or {}
+    if collect_cfg.get("enabled", False):
+        settings = collect.CollectSettings.from_dict(collect_cfg)
+        collect.register(bolt_app, settings, slack.web)
+        logger.info(
+            "Registered /collect for channel %s (%d allowed users)",
+            settings.channel, len(settings.allowed_users),
+        )
 
     scheduler = NotificationScheduler(storage, rules, cfg.poll_interval_seconds)
     scheduler.start()

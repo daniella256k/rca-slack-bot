@@ -7,6 +7,16 @@ database:
 
 poll_interval_seconds: 60   # how often the scheduler checks for due warnings
 
+commands:
+  # /collect START [END] -> DMs the requester a CSV (sender, timestamp,
+  # line_content) of every line posted in `channel` in that date range.
+  # Needs the `commands` scope and a /collect slash command in the Slack app.
+  collect:
+    enabled: false
+    channel: "C0123456"              # #sales-record channel ID
+    timezone: "America/Chicago"      # dates are interpreted in this zone
+    allowed_users: []                # Slack user IDs; empty = nobody
+
 rules:
   # --- Contact follow-up SLA ---------------------------------------------
   - name: contact_follow_up
@@ -20,8 +30,8 @@ rules:
     # source_username: "Zapier"       # use for incoming webhooks when source_bot_id isn't stable
 
     # timing
-    watch_duration_hours: 12
-    warning_offsets_hours: [1]        # warns at 12h - 1h = the 11h mark
+    watch_duration_hours: 16
+    warning_offsets_hours: [1]        # warns at 16h - 1h = the 15h mark
 
     # what cancels the countdown
     cancel_emojis: ["white_check_mark", "x"]
@@ -31,7 +41,7 @@ rules:
     mention: "<!channel>"
     warning_template: >
       {mention} A contact submitted {age_hours}h ago in <#C0123456> still hasn't
-      been followed up on and is nearing the 12-hour SLA. <{permalink}|View the message>
+      been followed up on and is nearing the 16-hour SLA. <{permalink}|View the message>
 
   # --- Example of a second, future rule reusing the same engine ---------
   # - name: another_sla
